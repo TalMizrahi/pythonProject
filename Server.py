@@ -1,9 +1,8 @@
-from flask import Flask, url_for, jsonify
+from flask import Flask
 import sqlite3
 
-import click
-from flask import current_app, g
-from flask.cli import with_appcontext
+from flask import current_app
+
 
 def get_db():
     if 'db' not in g:
@@ -44,7 +43,7 @@ app = Flask(__name__, template_folder='template')
 ###example of pages:
 
 
-from flask import stream_with_context, request, Response
+from flask import stream_with_context, Response
 
 name = 'dani'
 ##didn't understand
@@ -84,26 +83,49 @@ def show_the_login_form():
   </div>
 </form>"""
 
+
+from flask import (
+    Blueprint, flash, g, redirect, url_for
+)
+from werkzeug.security import generate_password_hash
+
+bp = Blueprint('auth', __name__, url_prefix='/auth')
 from flask import request, render_template
 
+@bp.route('/register', methods=('GET', 'POST'))
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        db = get_db()
+        error = None
+
+        if not username:
+            error = 'Username is required.'
+        elif not password:
+            error = 'Password is required.'
+
+        if error is None:
+            try:
+                db.execute(
+                    "INSERT INTO user (username, password) VALUES (?, ?)",
+                    (username, generate_password_hash(password)),
+                )
+                db.commit()
+            except db.IntegrityError:
+                error = f"User {username} is already registered."
+            else:
+                return redirect(url_for("auth.login"))
+
+        flash(error)
+
+    return render_template('auth/register.html')
 
 @app.route('/hello2/')
 @app.route('/hello2/<name>')
 def hello2(name=None):
     return render_template('html.html', name=name)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        return do_the_login()
-    else:
-        return show_the_login_form()
-@app.route('/user/<username>')
-def show_user_profile(username):
-    # show the user profile for that user
-    return f'User {escape(username)}'
-
-#    {print(about_css.read())}
 
 about_css = open('static\static.css', 'r')
 print(about_css.read())
