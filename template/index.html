@@ -1,0 +1,24 @@
+
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+    </style>
+
+  </head>
+{% block title %}
+  Home
+
+
+{% endblock %}
+
+{{ form.hidden_tag() }}
+{% block body %}
+  <h1 class="text-center">Welcome to To-Do List</h1>
+
+{% endblock %}
+
+   </html>
