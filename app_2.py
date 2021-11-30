@@ -10,6 +10,8 @@ import threading
 import webbrowser
 import os
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import  generate_password_hash
+from werkzeug.security import  check_password_hash
 
 # General Settings
 app = Flask(__name__, template_folder='template')
@@ -52,7 +54,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
-            if user.password == form.password.data:
+            if check_password_hash(user.password, form.password.data):
                 return redirect(url_for('about'))
         return "<h1> incorrect username or password </h1>"
 
@@ -65,7 +67,8 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return '<h1> new user has created </h1>'
