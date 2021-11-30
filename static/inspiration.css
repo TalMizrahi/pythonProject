@@ -1,0 +1,131 @@
+.qd-btn {
+  outline: none;
+  border: none;
+  cursor: pointer;
+  background: #d3ccbd;
+  padding: 10px 9px;
+  display: block;
+  position: relative;
+  margin: 20px 0 40px 20px;
+  box-shadow: 10px 10px 2px 0px rgba(0, 0, 0, 0.3);
+  color: white;
+  font-weight: 800;
+  width: 100%;
+  transition: all 0.1s;
+  top: 0;
+  left: 0;
+}
+.qd-btn::after {
+  content: "";
+  display: inline-block;
+  width: 100%;
+  height: 20px;
+  background: #b8b09c;
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  transform: skewX(-45deg);
+  box-shadow: 20px 10px 3px 0px rgba(0, 0, 0, 0.3);
+  transition: all 0.1s;
+}
+.qd-btn::before {
+  content: "";
+  display: inline-block;
+  height: 100%;
+  width: 20px;
+  background: #e0dbcf;
+  position: absolute;
+  top: 10px;
+  left: -20px;
+  transform: skewY(-45deg);
+  transition: all 0.1s;
+}
+.qd-btn:active {
+  top: 10px;
+  left: -10px;
+}
+.qd-btn:active::after {
+  height: 10px;
+  right: 5px;
+}
+.qd-btn:active::before {
+  width: 10px;
+  left: -10px;
+  top: 5px;
+}
+.qd-btn.pink {
+  background: #ee7aaa;
+}
+.qd-btn.pink::before {
+  background: #f3a0c5;
+}
+.qd-btn.pink::after {
+  background: #db5b90;
+}
+.qd-btn.yellow {
+  background: #ffd139;
+}
+.qd-btn.yellow::before {
+  background: #f9dd8f;
+}
+.qd-btn.yellow::after {
+  background: #e2b537;
+}
+.qd-btn.green {
+  background: #2eaa50;
+}
+.qd-btn.green::before {
+  background: #72b64b;
+}
+.qd-btn.green::after {
+  background: #237636;
+}
+.qd-btn.red {
+  background: #de4937;
+}
+.qd-btn.red::before {
+  background: #e26359;
+}
+.qd-btn.red::after {
+  background: #c84433;
+}
+.qd-btn.blue {
+  background: #3665a6;
+}
+.qd-btn.blue::before {
+  background: #397ec1;
+}
+.qd-btn.blue::after {
+  background: #264973;
+}
+.qd-btn.light-blue {
+  background: #5ca8dd;
+}
+.qd-btn.light-blue::before {
+  background: #a6d7f5;
+}
+.qd-btn.light-blue::after {
+  background: #397ea9;
+}
+.qd-btn.black {
+  background: #000;
+}
+.qd-btn.black::before {
+  background: #222;
+}
+.qd-btn.black::after {
+  background: #111;
+}
+
+html, body {
+  margin: 10px;
+  padding: 0;
+}
+
+.wrap {
+  width: 400px;
+  position: relative;
+  margin: 0 auto;
+  text-align: center;
+  font-family: verdana;
+}

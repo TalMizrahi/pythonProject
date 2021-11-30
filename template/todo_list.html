@@ -1,0 +1,55 @@
+{% include "layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h2>My To-Do List</h2>
+<div>
+    <ul>
+    </ul>
+</div>
+
+<table>
+  <tr>
+    <th>My Personal Goal</th>
+    <th>Accomplish Time</th>
+    <th>Priority</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>Do Homework</td>
+    <td>21/11/2021</td>
+    <td>High</td>
+    <td>Done!</td>
+  </tr>
+ <tr>
+    <td>Go to Gym</td>
+    <td>23/11/2021</td>
+    <td>Mid</td>
+    <td>Waiting</td>
+  </tr>
+
+</table>
+
+</body>
+</html>
