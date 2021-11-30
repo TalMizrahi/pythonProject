@@ -1,4 +1,6 @@
 from flask import Flask
+from flask import  url_for
+from  flask import  redirect
 from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
@@ -16,7 +18,6 @@ SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
 db = SQLAlchemy(app)
-db.create_all()
 
 
 
@@ -49,7 +50,13 @@ def index():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if user.password == form.password.data:
+                return redirect(url_for('about'))
+        return "<h1> incorrect username or password </h1>"
+
+        # return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
     return render_template("login.html", form=form)
 
 
@@ -78,6 +85,8 @@ def todolist():
     return render_template("/todo_list.html")
 
 
+
+
 # Run the server on a local host:
 
 
@@ -86,3 +95,11 @@ url = "http://127.0.0.1:{0}".format(port)
 
 threading.Timer(1.25, lambda: webbrowser.open(url)).start()
 app.run(port=port, debug=True)
+
+admin = User('admin', 'admin@example.com')
+guest = User('guest', 'guest@example.com')
+db.session.add(admin)
+db.session.add(guest)
+db.session.commit()
+users = User.query.all()
+print (users)
