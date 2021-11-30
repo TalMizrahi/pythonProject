@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'database.db'
 db = SQLAlchemy(app)
 
 
-# Dosen't work yet:
+# Doesn't work yet:
 # class User(db.Model):
 #     id = db.column(db.Integer, primary_key=True)
 #     username = db.Column(db.String(15), unique=True)
