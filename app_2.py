@@ -1,6 +1,6 @@
 from flask import Flask
-from flask import  url_for
-from  flask import  redirect
+from flask import url_for
+from flask import redirect
 from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
@@ -10,8 +10,8 @@ import threading
 import webbrowser
 import os
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import  generate_password_hash
-from werkzeug.security import  check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user, login_manager
 
 # General Settings
 app = Flask(__name__, template_folder='template')
@@ -20,14 +20,20 @@ SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
 db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
-
-
-class User(db.Model):
+class User(UserMixin ,db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 class LoginForm (FlaskForm):
@@ -55,7 +61,8 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
-                return redirect(url_for('about'))
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('todolist'))
         return "<h1> incorrect username or password </h1>"
 
         # return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
@@ -83,13 +90,10 @@ def about():
 
 
 @app.route('/todo_list')
+@login_required
 def todolist():
 
-    return render_template("/todo_list.html")
-
-
-
-
+    return render_template("/todo_list.html", name=current_user.username)
 # Run the server on a local host:
 
 
@@ -105,4 +109,4 @@ db.session.add(admin)
 db.session.add(guest)
 db.session.commit()
 users = User.query.all()
-print (users)
+print(users)
