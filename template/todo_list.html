@@ -1,4 +1,6 @@
+{% import "bootstrap/wtf.html" as wtf %}
 {% include "layout.html" %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -51,5 +53,17 @@ tr:nth-child(even) {
 
 </table>
 
+<div class="container">
+  <form class="add_todolist" method="POST" action="/todolist">
+    <h1 style="color:Black" class="form-todolist-heading">Add Goal!</h1>
+          {{ form.hidden_tag() }}
+          {{ wtf.form_field(class="add_todolist" form.task_name,  placeholder="Goal Name") }}
+          {{ wtf.form_field(form.due_date,  placeholder="Due Date") }}
+          {{ wtf.form_field(form.priority,  placeholder="Priority") }}
+          {{ wtf.form_field(form.Status,  placeholder="Status") }}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+  </form>
+
+</div> <!-- /container -->
 </body>
 </html>

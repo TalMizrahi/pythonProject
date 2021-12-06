@@ -12,6 +12,8 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user, login_manager
+from sqlalchemy import create_engine, MetaData, Table
+
 
 # General Settings
 app = Flask(__name__, template_folder='template')
@@ -24,12 +26,32 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+
 class User(UserMixin ,db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
 
+
+class Todolist(db.Model):
+    username = db.Column(db.String(15))
+    task_id = db.Column(db.Integer, primary_key=True)
+    board = db.Column(db.String(50))
+    task_name = db.Column(db.String(200))
+    priority = db.Column(db.String(200))
+    status = db.Column(db.String(50))
+    due_date = db.Column(db.String)
+
+
+def create_db():
+    db.create_all()
+    db.session.commit()
+
+
+new_list = Todolist(username="user", board="main",task_name="do homework",status= "in progress", due_date="11/10/2021", priority="high")
+db.session.add(new_list)
+db.session.commit()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -46,6 +68,13 @@ class RegisterForm(FlaskForm):
     email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+
+
+class TodolistForm(FlaskForm):
+    task_name = StringField('Goal Name', validators=[InputRequired(), Length(max=50)])
+    due_date = StringField('Due Date', validators=[InputRequired(), Length(max=50)])
+    priority = StringField('Priority', validators=[InputRequired(), Length(max=50)])
+    status = StringField('Status', validators=[InputRequired(), Length(max=50)])
 
 
 # pages of the app:
@@ -65,7 +94,6 @@ def login():
                 return redirect(url_for('todolist'))
         return "<h1> incorrect username or password </h1>"
 
-        # return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
     return render_template("login.html", form=form)
 
 
@@ -89,11 +117,17 @@ def about():
     return render_template('/about.html/')
 
 
-@app.route('/todo_list')
+@app.route('/todo_list', methods=['GET', 'POST'])
 @login_required
 def todolist():
-
-    return render_template("/todo_list.html", name=current_user.username)
+    form = TodolistForm()
+    if form.validate_on_submit():
+        new_todo = TodolistForm(username="test", board="Main",
+                                task_name=form.task_name.data, due_date=form.due_date.data,
+                                priority=form.priority.data, status=form.status.data)
+        db.session.add(new_todo)
+        db.session.commit()
+    return render_template("/todo_list.html")
 # Run the server on a local host:
 
 
@@ -109,4 +143,4 @@ db.session.add(admin)
 db.session.add(guest)
 db.session.commit()
 users = User.query.all()
-print(users)
+db.create_all()
