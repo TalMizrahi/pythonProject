@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, flash
 from flask import url_for
 from flask import redirect
 from flask import render_template
@@ -48,11 +48,6 @@ def create_db():
     db.create_all()
     db.session.commit()
 
-
-new_list = Todolist(username="user", board="main",task_name="do homework",status= "in progress", due_date="11/10/2021", priority="high")
-db.session.add(new_list)
-db.session.commit()
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -76,6 +71,9 @@ class TodolistForm(FlaskForm):
     priority = StringField('Priority', validators=[InputRequired(), Length(max=50)])
     status = StringField('Status', validators=[InputRequired(), Length(max=50)])
 
+
+engine = create_engine("sqlite:///database.db")
+metadata = MetaData(bind=engine)
 
 # pages of the app:
 @app.route("/")
@@ -120,14 +118,18 @@ def about():
 @app.route('/todo_list', methods=['GET', 'POST'])
 @login_required
 def todolist():
-    form = TodolistForm()
-    if form.validate_on_submit():
-        new_todo = TodolistForm(username="test", board="Main",
-                                task_name=form.task_name.data, due_date=form.due_date.data,
-                                priority=form.priority.data, status=form.status.data)
+    # data = Todolist.quray.
+    if current_user.is_authenticated:
+        logged_user = current_user.username
+    # todo_table.select(todo_table.username == logged_user).execexecute().first()
+    form = TodolistForm(request.form)
+    if request.method == "POST" and form.validate():
+        new_todo = Todolist(username=logged_user, board="Main",
+        task_name=form.task_name.data, due_date=form.due_date.data,
+        priority=form.priority.data, status=form.status.data)
         db.session.add(new_todo)
         db.session.commit()
-    return render_template("/todo_list.html")
+    return render_template("/todo_list.html", form=form)
 # Run the server on a local host:
 
 
