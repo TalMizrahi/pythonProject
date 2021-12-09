@@ -13,6 +13,17 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user, login_manager
 from sqlalchemy import create_engine, MetaData, Table
+import sqlite3
+import random
+
+
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# def get_random_emoji():
+#     return ["",'U+1F642',"U+1F600"][random.randint(0, 3)]
 
 
 # General Settings
@@ -27,7 +38,7 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 
-class User(UserMixin ,db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
@@ -36,7 +47,7 @@ class User(UserMixin ,db.Model):
 
 class Todolist(db.Model):
     username = db.Column(db.String(15))
-    task_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     board = db.Column(db.String(50))
     task_name = db.Column(db.String(200))
     priority = db.Column(db.String(200))
@@ -44,16 +55,15 @@ class Todolist(db.Model):
     due_date = db.Column(db.String)
 
 
-def create_db():
-    db.create_all()
-    db.session.commit()
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def is_user_logged_in():
+    return current_user.is_authenticated
 
-class LoginForm (FlaskForm):
+
+class LoginForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=4, max=15)])
     remember = BooleanField('remember me')
@@ -75,10 +85,36 @@ class TodolistForm(FlaskForm):
 engine = create_engine("sqlite:///database.db")
 metadata = MetaData(bind=engine)
 
+
+def sql_query(query, params):
+   conn = get_db_connection()
+   cur = conn.cursor()
+   cur.execute(query, params)
+   rows = cur.fetchall()
+   return rows
+
+def create_html_table(table_name):
+    html_script = ""
+    for row in table_name:
+        html_script += f""" <tr>
+    <td>{row.task_name}<td>
+    <td>{row.due_date}</td>
+    <td>{row.priority}</td>
+    <td>{row.status}</td>
+    </tr>"""
+    return html_script
+
 # pages of the app:
 @app.route("/")
 def index():
-    return render_template("index.html")
+    user_logged = is_user_logged_in()
+    return render_template("index.html", user_logged=user_logged)
+
+
+@app.route("/To-Do List-Old.html")
+def To_Do_List_Old():
+    user_logged = is_user_logged_in()
+    return render_template("To-Do List-Old.html", user_logged=user_logged)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -93,6 +129,12 @@ def login():
         return "<h1> incorrect username or password </h1>"
 
     return render_template("login.html", form=form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return render_template("index.html")
+
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -112,24 +154,39 @@ def register():
 
 @app.route('/about')
 def about():
-    return render_template('/about.html/')
+    user_logged = is_user_logged_in()
+    return render_template('/about.html/', user_logged=user_logged)
 
 
 @app.route('/todo_list', methods=['GET', 'POST'])
 @login_required
 def todolist():
-    # data = Todolist.quray.
+    user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
-    # todo_table.select(todo_table.username == logged_user).execexecute().first()
     form = TodolistForm(request.form)
     if request.method == "POST" and form.validate():
         new_todo = Todolist(username=logged_user, board="Main",
-        task_name=form.task_name.data, due_date=form.due_date.data,
-        priority=form.priority.data, status=form.status.data)
+                            task_name=form.task_name.data, due_date=form.due_date.data,
+                            priority=form.priority.data, status=form.status.data)
         db.session.add(new_todo)
         db.session.commit()
-    return render_template("/todo_list.html", form=form)
+    conn = get_db_connection()
+    todolist_table = sql_query('SELECT task_name, due_date, priority,status FROM `Todolist` WHERE username =?', [logged_user])
+    conn.close()
+
+    def create_html_table(table_name):
+            return
+            print('<table>')
+            for sublist in table_name:
+                print('  <tr><td>')
+                print('    </td><td>'.join(sublist))
+                print('  </td></tr>')
+            print('</table>')
+    # todolist_table = create_html_table(todolist_table)
+    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table, logged_user=logged_user, user_logged=user_logged, create_html_table=create_html_table)
+
+
 # Run the server on a local host:
 
 
@@ -139,10 +196,5 @@ url = "http://127.0.0.1:{0}".format(port)
 threading.Timer(1.25, lambda: webbrowser.open(url)).start()
 app.run(port=port, debug=True)
 
-admin = User('admin', 'admin@example.com')
-guest = User('guest', 'guest@example.com')
-db.session.add(admin)
-db.session.add(guest)
-db.session.commit()
-users = User.query.all()
-db.create_all()
+# engine = create_engine("database.db")
+# metadata = MetaData(bind=engine)
