@@ -1,11 +1,86 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% include "layout.html" %}
 
-<!DOCTYPE html>
 <html lang="en">
 
+
+
 <head>
-<style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type='text/javascript'>
+$(document).ready(function(){
+
+// Show Input element
+$('.edit').click(function(){
+$('.txtedit').hide();
+$(this).next('.txtedit').show().focus();
+$(this).hide();
+});
+
+// Save data
+$(".txtedit").focusout(function(){
+
+// Get edit id, field name and value
+  var id = this.id;
+  var split_id = id.split("@");
+  var field_name = split_id[0];
+  var edit_id = split_id[1];
+  var value = $(this).val();
+
+// Hide Input element
+$(this).hide();
+
+// Hide and Change Text of the container with input elmeent
+$(this).prev('.edit').show();
+$(this).prev('.edit').text(value);
+
+$.ajax({
+url: '/edit_todo',
+type: 'post',
+data: { field:field_name, value:value, id:edit_id },
+success:function(response){
+if(response == 1){
+console.log('Save successfully');
+}else{
+console.log("Not saved.");
+}
+}
+});
+
+$(".input").on('keyup', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+        // Do something
+    }
+});
+
+// e.key is the modern way of detecting keys
+// e.keyCode is deprecated (left here for for legacy browsers support)
+// keyup is not compatible with Jquery select(), Keydown is.
+
+
+});
+if(characterCode == 13)
+{
+    return true; // returning false will prevent the event from bubbling up.
+}
+
+});
+</script>
+        <script type="text/javascript">
+        $("#autoCompInput").bind("keypress", {}, keypressInBox);
+
+function keypressInBox(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode
+        e.preventDefault();
+
+        $("yourFormId").submit();
+    }
+};
+
+
+        </script>
+    <style>
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
@@ -24,34 +99,16 @@ tr:nth-child(even) {
 </style>
 </head>
 <body>
+<div class="container"></div>
+<div class="row" style="padding: 50px;">
 
-<h2>My To-Do List</h2>
+    <h2>My To-Do List</h2>
 <div>
     <ul>
     </ul>
 </div>
 
-<table>
-  <tr>
-    <th>My Personal Goal</th>
-    <th>Accomplish Time</th>
-    <th>Priority</th>
-    <th>Status</th>
-  </tr>
-  <tr>
-    <td>Do Homework</td>
-    <td>21/11/2021</td>
-    <td>High</td>
-    <td>Done!</td>
-  </tr>
- <tr>
-    <td>Go to Gym</td>
-    <td>23/11/2021</td>
-    <td>Mid</td>
-    <td>Waiting</td>
-  </tr>
 
-</table>
 {% for item in data %}
 <tr>
     <td>{{item[0]}}</td>
@@ -60,25 +117,53 @@ tr:nth-child(even) {
 <hr>
 <table>
 <tr>
-    <th>To-Do</th>
-    <th>Due Date</th>
-    <th>Priority</th>
-    <th>Status</th>
+    <th style="text-align:center">To-Do</th>
+    <th style="text-align:center">Due Date</th>
+    <th style="text-align:center">Priority</th>
+    <th style="text-align:center">Status</th>
+    <th style="text-align:center">Action</th>
+  </tr>
+<ul>
+    </ul>
+{%  for row in todolist_table %}
+    <tr>
+      <td>
+       <div class='edit' > {{ row[1] }}</div>
+        <input type ='text' class='txtedit' ,  value='{{row[1]}}' , id='task_name@{{row[0]}}', field="task_name">
+      </td>
+              </td>
+    <td>
+       <div class='edit' > {{ row[2] }} </div>
+        <input type ='text' class='txtedit' , value='{{row[2]}}' , id='due_date@{{row[0]}}', field="due_date">
+        </td>
+    <td>
+       <div class='edit' > {{ row[3] }} </div>
+        <input type ='text' class='txtedit'  ,value='{{row[3]}}' , id='priority@{{row[0]}}', field="priority">
+        </td>
+       <td>
+           <div class='edit' > {{ row[4] }} </div>
+        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' ], field="task_name">
+    <form>
+                <td>
+
+                  <div class="col-auto">
+             <input type="submit" class="btn btn-success mb-2" name="btnEdit" value="Done!">
+             <input type="submit" class="btn btn-danger mb-2" name="btnDel" value="Delete">
+            </td>
+          </div>
+
+        </form>
+           </td>
   </tr>
 
-<ul>
-{%  for row in todolist_table %}
-  <tr>
-      <td>{{ row[0] }}</td>
-      <td>{{ row[1] }}</td>
-      <td>{{ row[2] }}</td>
-      <td>{{ row[3] }}</td>
-  </tr>
 
     {% endfor %}
+    <button class="btn btn-success btn-sm pull-left" type="submit">Add New To-Do!</button>
+
 </table>
-</ul>
-<div class="container">
+
+
+
   <form class="add_todolist" method="POST" action="/todo_list">
     <h1 style="color:Black" class="form-todolist-heading">Add New To-Do!</h1>
           {{ form.hidden_tag() }}
@@ -90,6 +175,41 @@ tr:nth-child(even) {
   </form>
 
 </div> <!-- /container -->
+<style>
+.edit{
+ width: 100%;
+ height: 25px;
+}
+.editMode{
+ border: 1px solid black;
+}
+table {
+ border:3px solid lavender;
+ border-radius:3px;
+}
+table tr:nth-child(1){
+ background-color:#4285f4;
+}
+table tr:nth-child(1) th{
+ color:white;
+ padding:10px 0px;
+ letter-spacing: 1px;
+}
+table td{
+ padding:10px;
+}
+table tr:nth-child(even){
+ background-color:lavender;
+ color:black;
+}
+.txtedit{
+ display: none;
+ width: 99%;
+ height: 30px;
+}
+</style>
+</body>
+</html>
 
 </body>
 </html>

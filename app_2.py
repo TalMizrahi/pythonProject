@@ -1,4 +1,6 @@
-from flask import Flask, request, flash
+import time
+import logging
+from flask import Flask, request, flash, jsonify
 from flask import url_for
 from flask import redirect
 from flask import render_template
@@ -12,9 +14,8 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user, login_manager
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData
 import sqlite3
-import random
 
 
 def get_db_connection():
@@ -24,7 +25,8 @@ def get_db_connection():
 
 # def get_random_emoji():
 #     return ["",'U+1F642',"U+1F600"][random.randint(0, 3)]
-
+def string_adjust(table):
+    return '"%s"'.format(table.replace('"', ''))
 
 # General Settings
 app = Flask(__name__, template_folder='template')
@@ -133,6 +135,8 @@ def login():
 @app.route("/logout")
 def logout():
     logout_user()
+    flash("logged out")
+    time.sleep(2)
     return render_template("index.html")
 
 
@@ -172,22 +176,50 @@ def todolist():
         db.session.add(new_todo)
         db.session.commit()
     conn = get_db_connection()
-    todolist_table = sql_query('SELECT task_name, due_date, priority,status FROM `Todolist` WHERE username =?', [logged_user])
+    todolist_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =?', [logged_user])
     conn.close()
-
-    def create_html_table(table_name):
-            return
-            print('<table>')
-            for sublist in table_name:
-                print('  <tr><td>')
-                print('    </td><td>'.join(sublist))
-                print('  </td></tr>')
-            print('</table>')
-    # todolist_table = create_html_table(todolist_table)
     return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table, logged_user=logged_user, user_logged=user_logged, create_html_table=create_html_table)
 
 
-# Run the server on a local host:
+@app.route('/edit_todo', methods=['GET', 'POST'])
+
+
+
+def edit_todo():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if request.method == 'POST':
+                field = request.form['field']
+                value = request.form['value']
+                editid = request.form['id']
+                print(value, editid, type(value), type(editid))
+                if field == "task_name":
+                    sql = "UPDATE Todolist SET task_name=? WHERE id=?"
+                    print(sql)
+                if field == "due_date":
+                    sql = "UPDATE Todolist SET due_date=? WHERE id=?"
+                    print(sql)
+                if field == "priority":
+                    sql = "UPDATE Todolist SET priority=? WHERE id=?"
+                    print(sql)
+                if field == "status":
+                    sql = "UPDATE Todolist SET status=? WHERE id=?"
+                    print(sql)
+                data = (value, editid)
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(sql, data)
+                conn.commit()
+                cursor.close()
+                success = 1
+        return jsonify(success)
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
+
 
 
 port = 5000  # + random.randint(0, 999)
