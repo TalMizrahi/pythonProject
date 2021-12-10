@@ -7,7 +7,18 @@
 
 <head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
 <script type='text/javascript'>
+
+function openForm() {
+  document.getElementById("myForm").style.display = "block";
+}
+
+function closeForm() {
+  document.getElementById("myForm").style.display = "none";
+}
+
 $(document).ready(function(){
 
 // Show Input element
@@ -34,6 +45,9 @@ $(this).hide();
 $(this).prev('.edit').show();
 $(this).prev('.edit').text(value);
 
+
+
+
 $.ajax({
 url: '/edit_todo',
 type: 'post',
@@ -52,10 +66,16 @@ $(".input").on('keyup', function (e) {
         // Do something
     }
 });
+$(document).keypress(function(event){
 
+var keycode = (event.keyCode ? event.keyCode : event.which);
+if(keycode == '13'){
+    $("#99").click();
+}});
 // e.key is the modern way of detecting keys
 // e.keyCode is deprecated (left here for for legacy browsers support)
 // keyup is not compatible with Jquery select(), Keydown is.
+
 
 
 });
@@ -69,24 +89,62 @@ if(characterCode == 13)
         <script type="text/javascript">
         $("#autoCompInput").bind("keypress", {}, keypressInBox);
 
-function keypressInBox(e) {
-    var code = (e.keyCode ? e.keyCode : e.which);
-    if (code == 13) { //Enter keycode
-        e.preventDefault();
-
-        $("yourFormId").submit();
-    }
-};
-
 
         </script>
     <style>
-table {
+        .open-button {
+  background-color: #555;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 23px;
+  right: 28px;
+  width: 280px;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+  border: 3px;
+  z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: white;
+}
+
+/* Full-width input fields */
+.form-container input[type=text], .form-container input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+}
+
+
+
+form {
+    display: inline-block; //Or display: inline;
+}
+    table {
   font-family: arial, sans-serif;
+        margin: auto;
   border-collapse: collapse;
   width: 100%;
 }
-
+h1{
+    color: #4dffff;
+}
 td, th {
   border: 1px solid #dddddd;
   text-align: left;
@@ -109,11 +167,6 @@ tr:nth-child(even) {
 </div>
 
 
-{% for item in data %}
-<tr>
-    <td>{{item[0]}}</td>
-</tr>
-{% endfor %}
 <hr>
 <table>
 <tr>
@@ -121,12 +174,12 @@ tr:nth-child(even) {
     <th style="text-align:center">Due Date</th>
     <th style="text-align:center">Priority</th>
     <th style="text-align:center">Status</th>
-    <th style="text-align:center">Action</th>
+    <th style="text-align:center">Done?</th>
   </tr>
 <ul>
     </ul>
 {%  for row in todolist_table %}
-    <tr>
+    <form class="todo_table", id="1">
       <td>
        <div class='edit' > {{ row[1] }}</div>
         <input type ='text' class='txtedit' ,  value='{{row[1]}}' , id='task_name@{{row[0]}}', field="task_name">
@@ -142,15 +195,27 @@ tr:nth-child(even) {
         </td>
        <td>
            <div class='edit' > {{ row[4] }} </div>
-        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' ], field="task_name">
+        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' ], field="status">
+       </td>
+    </form>
     <form>
                 <td>
 
                   <div class="col-auto">
-             <input type="submit" class="btn btn-success mb-2" name="btnEdit" value="Done!">
-             <input type="submit" class="btn btn-danger mb-2" name="btnDel" value="Delete">
-            </td>
+
+<!--             <form method="POST" action="/done_todo/{{ row[0] }}">-->
+<!--             <input herf="/done_todo/{{row[0]}}" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">-->
+<!--             </form>-->
+<!--              <form class="edit_todolist" method="POST" action="/edit_todo">-->
+<!--             <input type="submit" class="btn btn-warning mb-2" name="btnEdit" value="Edit">-->
+                </form>
+             <form method="POST" action="/delete_todo/{{ row[0] }}">
+             <input align-text="center" herf="/delete_todo/{{row[0]}}" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">
+             </form>
+
           </div>
+            </td>
+
 
         </form>
            </td>
@@ -158,20 +223,23 @@ tr:nth-child(even) {
 
 
     {% endfor %}
-    <button class="btn btn-success btn-sm pull-left" type="submit">Add New To-Do!</button>
+    <button class="btn btn-warning btn-sm pull-left" type="submit To-Do Changes!">Save Changes!</button>
 
 </table>
 
+      <button class="btn btn-success btn-sm pull-left" class="open-button" onclick="openForm()">Add New To-Do!</button>
 
+    <div class="form-popup" id="myForm">
+  <form class="add_todolist" method="POST" action="/todo_list" autocomplete="on">
+    <h1 class="form-todolist-heading">Add New To-Do!</h1>
+        {{ form.hidden_tag() }}
+          {{ wtf.form_field(form.task_name,  placeholder="Your To-Do Goes Here!") }}
+          {{ wtf.form_field(form.due_date,  placeholder="When will you do it?") }}
+          {{ wtf.form_field(form.priority,  placeholder="What is the Priority?") }}
+          {{ wtf.form_field(form.status,  placeholder="What is the Status?") }}
+      <button class="btn btn-success btn-sm pull-left" type="submit">Submit!</button>
+      <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
 
-  <form class="add_todolist" method="POST" action="/todo_list">
-    <h1 style="color:Black" class="form-todolist-heading">Add New To-Do!</h1>
-          {{ form.hidden_tag() }}
-          {{ wtf.form_field(form.task_name,  placeholder="Goal Name") }}
-          {{ wtf.form_field(form.due_date,  placeholder="Due Date") }}
-          {{ wtf.form_field(form.priority,  placeholder="Priority") }}
-          {{ wtf.form_field(form.status,  placeholder="Status") }}
-      <button class="btn btn-success btn-sm pull-left" type="submit">Add New To-Do!</button>
   </form>
 
 </div> <!-- /container -->
@@ -183,9 +251,13 @@ tr:nth-child(even) {
 .editMode{
  border: 1px solid black;
 }
+
+{ padding: 0; margin: 0; }
 table {
  border:3px solid lavender;
  border-radius:3px;
+ table-layout: auto;
+
 }
 table tr:nth-child(1){
  background-color:#4285f4;
