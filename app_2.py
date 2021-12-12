@@ -139,10 +139,7 @@ def register():
         cursor = conn.cursor()
         cursor.execute(sql, data)
         conn.commit()
-        cursor.close()
-        return redirect("/login")
-
-    return render_template("register.html", form=form)
+    return render_template("login.html", form=form)
 
 
 @app.route('/about')
@@ -165,18 +162,19 @@ def todolist():
         db.session.add(new_todo)
         db.session.commit()
     conn = get_db_connection()
-    todolist_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =?',
-                               [logged_user])
-    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table, logged_user=logged_user)
+    todolist_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =? and board=?',
+                               [logged_user,'main'])
+    done_list_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =? and board=?',
+                               [logged_user,'done'])
+    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table,done_list_table=done_list_table, logged_user=logged_user)
 
 
 @app.route("/delete_todo/<string:id>", methods=['GET', 'POST'])
-@login_required
 def delete_todo(id):
-    print(id)
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
+    form = TodolistForm(request.form)
     try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -188,42 +186,14 @@ def delete_todo(id):
             cursor = conn.cursor()
             cursor.execute(sql, [id])
             conn.commit()
-            cursor.close()
             success = 1
+            print("1")
             return redirect("/todo_list")
     except Exception as e:
         print(e)
     finally:
         cursor.close()
-    return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
-
-
-# @app.route("/delete_todo/<string:id>", methods=['GET', 'POST'])
-# @login_required
-# def done_todo(id):
-#     user_logged = is_user_logged_in()
-#     if current_user.is_authenticated:
-#         logged_user = current_user.username
-#     form = TodolistForm(request.form)
-#     try:
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-#             print("test3")
-#             print(id, type(id))
-#             sql = "DELETE FROM Todolist WHERE id=?"
-#             print(sql)
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-#             cursor.execute(sql, [id])
-#             conn.commit()
-#             cursor.close()
-#             success = 1
-#             return redirect("/todo_list")
-#     except Exception as e:
-#         print(e)
-#     finally:
-#         cursor.close()
-#     return render_template("/todo_list.html", Todolist=Todolist, form=form,user_logged=user_logged)
+    return render_template("/todo_list.html", Todolist=Todolist, form=form)
 
 
 @app.route("/edit_todo", methods=['GET', 'POST'])
@@ -259,15 +229,46 @@ def edit_todo():
                 cursor = conn.cursor()
                 cursor.execute(sql, data)
                 conn.commit()
-                cursor.close()
                 success = 1
         return jsonify(success)
     except Exception as e:
         print(e)
     finally:
         cursor.close()
-        conn.close()
     return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
+
+@app.route("/done_todo/<string:id><string:task_name><string:due_date><string:priority><string:status>", methods=['GET', 'POST'])
+def done_todo(id, task_name, due_date, priority, status):
+    print(id, task_name, due_date, priority, status)
+    user_logged = is_user_logged_in()
+    if current_user.is_authenticated:
+        logged_user = current_user.username
+    form = TodolistForm(request.form)
+    try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            print("test3")
+            print(id, type(id))
+            sql = "DELETE FROM Todolist WHERE id=?"
+            print(sql)
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, [id])
+            sql = """INSERT INTO Todolist (username, board, task_name, due_date, priority, status)
+                        VALUES 
+                        (?,'done' ,?, ?,?,?)"""
+            print(sql)
+            data = (logged_user, task_name, due_date, priority, status)
+            cursor.execute(sql, data)
+            conn.commit()
+            success = 1
+            print("1")
+            return redirect("/todo_list")
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+    return render_template("/todo_list.html", Todolist=Todolist, form=form)
 
 
 port = 5000  # + random.randint(0, 999)

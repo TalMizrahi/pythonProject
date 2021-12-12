@@ -1,7 +1,7 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% include "layout.html" %}
 
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
 
 
@@ -107,11 +107,13 @@ if(characterCode == 13)
 
 /* The popup form - hidden by default */
 .form-popup {
+  background-color: #ffffff !important;
+  border-color: #4dffff !important;
   display: none;
   position: fixed;
   bottom: 0;
-  right: 15px;
-  border: 3px;
+  right: 50%;
+  border: 10px;
   z-index: 9;
 }
 
@@ -169,12 +171,13 @@ tr:nth-child(even) {
 
 <hr>
 <table>
-<tr>
-    <th style="text-align:center">To-Do</th>
-    <th style="text-align:center">Due Date</th>
-    <th style="text-align:center">Priority</th>
+
+    <tr>
+    <th style="text-align:center">Goal Achieved</th>
+    <th style="text-align:center">Date</th>
+    <th style="text-align:center">Priority Set</th>
     <th style="text-align:center">Status</th>
-    <th style="text-align:center">Done?</th>
+    <th style="text-align:center">Actions</th>
   </tr>
 <ul>
     </ul>
@@ -198,32 +201,33 @@ tr:nth-child(even) {
         <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' , field="status">
        </td>
     </form>
-    <form>
+
                 <td>
 
-                  <div class="col-auto">
 
-     <form method="POST" action="/delete_todo/{{ row[0] }}">
-     <input align-text="center" herf="/delete_todo/{{row[0]}}" type="submit" class="btn btn-danger mb-2"  value="Delete"  id="{{ row[0] }}">
-     </form>
+<form method="POST" action="/delete_todo/{{ row[0] }}">
+ <input align-text="center" type="submit" class="btn btn-danger mb-2"  value="Delete"  id="{{ row[0] }}">
+ </form>
 
-          </div>
+
+<form method="POST" action="/done_todo/{{ row[0] }}{{ row[1] }}{{ row[2] }}{{ row[3] }}{{ row[4] }}">
+ <input align-text="center" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">
+ </form>
+
             </td>
 
-
-        </form>
-           </td>
   </tr>
 
 
     {% endfor %}
-    <button class="btn btn-warning btn-sm pull-left" type="submit To-Do Changes!">Save Changes!</button>
+    <button class="btn btn-warning btn-sm pull-left" type="submit To-Do Changes!">Changes Saved!</button>
 
 </table>
 
       <button class="btn btn-success btn-sm pull-left" class="open-button" onclick="openForm()">Add New To-Do!</button>
 
     <div class="form-popup" id="myForm">
+
   <form class="add_todolist" method="POST" action="/todo_list" autocomplete="on">
     <h1 class="form-todolist-heading">Add New To-Do!</h1>
         {{ form.hidden_tag() }}
@@ -231,10 +235,62 @@ tr:nth-child(even) {
           {{ wtf.form_field(form.due_date,  placeholder="When will you do it?") }}
           {{ wtf.form_field(form.priority,  placeholder="What is the Priority?") }}
           {{ wtf.form_field(form.status,  placeholder="What is the Status?") }}
-      <button class="btn btn-success btn-sm pull-left" type="submit">Submit!</button>
+      <button class="btn btn-success btn-sm pull-left" type="submit" onclick="closeForm()">Submit!</button>
       <button class="btn btn-danger btn-sm pull-left" type="button" class="btn cancel" onclick="closeForm()">Close</button>
 
   </form>
+<br></br>
+    </div>
+</div>
+</br>
+        <h2>My Done List!</h2>
+<table>
+<tr>
+    <th style="text-align:center">To-Do</th>
+    <th style="text-align:center">Due Date</th>
+    <th style="text-align:center">Priority</th>
+    <th style="text-align:center">Status</th>
+    <th style="text-align:center">Delete</th>
+  </tr>
+<ul>
+    </ul>
+{%  for row in done_list_table %}
+    <form class="todo_table", id="1">
+      <td>
+       <div class='edit' > {{ row[1] }}</div>
+        <input type ='text' class='txtedit' ,  value='{{row[1]}}' , id='task_name@{{row[0]}}', field="task_name">
+      </td>
+              </td>
+    <td>
+       <div class='edit' > {{ row[2] }} </div>
+        <input type ='text' class='txtedit' , value='{{row[2]}}' , id='due_date@{{row[0]}}', field="due_date">
+        </td>
+    <td>
+       <div class='edit' > {{ row[3] }} </div>
+        <input type ='text' class='txtedit'  ,value='{{row[3]}}' , id='priority@{{row[0]}}', field="priority">
+        </td>
+       <td>
+           <div class='edit' > {{ row[4] }} </div>
+        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' , field="status">
+       </td>
+    </form>
+
+                <td>
+
+
+<form method="POST" action="/delete_todo/{{ row[0] }}">
+ <input align-text="center" type="submit" class="btn btn-danger mb-2"  value="Delete"  id="{{ row[0] }}">
+ </form>
+
+            </td>
+
+  </tr>
+
+
+    </div>
+    {% endfor %}
+
+</table>
 
 </div> <!-- /container -->
 <style>
