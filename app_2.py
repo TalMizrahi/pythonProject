@@ -21,10 +21,6 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# def get_random_emoji():
-#     return ["",'U+1F642',"U+1F600"][random.randint(0, 3)]
-def string_adjust(table):
-    return '"%s"'.format(table.replace('"', ''))
 
 # General Settings
 app = Flask(__name__, template_folder='template')
@@ -58,6 +54,7 @@ class Todolist(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 def is_user_logged_in():
     return current_user.is_authenticated
@@ -93,28 +90,12 @@ def sql_query(query, params):
    rows = cur.fetchall()
    return rows
 
-def create_html_table(table_name):
-    html_script = ""
-    for row in table_name:
-        html_script += f""" <tr>
-    <td>{row.task_name}<td>
-    <td>{row.due_date}</td>
-    <td>{row.priority}</td>
-    <td>{row.status}</td>
-    </tr>"""
-    return html_script
 
 # pages of the app:
 @app.route("/")
 def index():
     user_logged = is_user_logged_in()
     return render_template("index.html", user_logged=user_logged)
-
-
-@app.route("/To-Do List-Old.html")
-def To_Do_List_Old():
-    user_logged = is_user_logged_in()
-    return render_template("To-Do List-Old.html", user_logged=user_logged)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -173,29 +154,29 @@ def about():
 @app.route('/todo_list', methods=['GET', 'POST'])
 @login_required
 def todolist():
-    print("1")
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
     form = TodolistForm(request.form)
     if request.method == "POST" and form.validate():
-        new_todo = Todolist(username=logged_user, board="Main",
+        new_todo = Todolist(username=logged_user, board="main",
                             task_name=form.task_name.data, due_date=form.due_date.data,
                             priority=form.priority.data, status=form.status.data)
         db.session.add(new_todo)
         db.session.commit()
     conn = get_db_connection()
-    todolist_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =?', [logged_user])
-    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table, logged_user=logged_user, user_logged=user_logged, create_html_table=create_html_table)
+    todolist_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =?',
+                               [logged_user])
+    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table, logged_user=logged_user)
 
 
 @app.route("/delete_todo/<string:id>", methods=['GET', 'POST'])
 @login_required
 def delete_todo(id):
+    print(id)
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
-    form = TodolistForm(request.form)
     try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -209,59 +190,88 @@ def delete_todo(id):
             conn.commit()
             cursor.close()
             success = 1
-            print("1")
             return redirect("/todo_list")
     except Exception as e:
         print(e)
     finally:
         cursor.close()
-    return render_template("/todo_list.html", Todolist=Todolist, form=form)
+    return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
 
 
-@app.route("/done_todo/<string:id>", methods=['GET', 'POST'])
+# @app.route("/delete_todo/<string:id>", methods=['GET', 'POST'])
+# @login_required
+# def done_todo(id):
+#     user_logged = is_user_logged_in()
+#     if current_user.is_authenticated:
+#         logged_user = current_user.username
+#     form = TodolistForm(request.form)
+#     try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             print("test3")
+#             print(id, type(id))
+#             sql = "DELETE FROM Todolist WHERE id=?"
+#             print(sql)
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute(sql, [id])
+#             conn.commit()
+#             cursor.close()
+#             success = 1
+#             return redirect("/todo_list")
+#     except Exception as e:
+#         print(e)
+#     finally:
+#         cursor.close()
+#     return render_template("/todo_list.html", Todolist=Todolist, form=form,user_logged=user_logged)
 
+
+@app.route("/edit_todo", methods=['GET', 'POST'])
 @login_required
-def done_todo(id):
+def edit_todo():
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
     form = TodolistForm(request.form)
+
     try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            print("test3")
-            print(id, type(id))
-            sql = "DELETE FROM Todolist WHERE id=?"
-            print(sql)
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute(sql, [id])
-            conn.commit()
-            cursor.close()
-            success = 1
-            print("1")
-            return redirect("/todo_list")
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if request.method == 'POST':
+                field = request.form['field']
+                value = request.form['value']
+                editid = request.form['id']
+                print(value, editid, type(value), type(editid))
+                if field == "task_name":
+                    sql = "UPDATE Todolist SET task_name=? WHERE id=?"
+                    print(sql)
+                if field == "due_date":
+                    sql = "UPDATE Todolist SET due_date=? WHERE id=?"
+                    print(sql)
+                if field == "priority":
+                    sql = "UPDATE Todolist SET priority=? WHERE id=?"
+                    print(sql)
+                if field == "status":
+                    sql = "UPDATE Todolist SET status=? WHERE id=?"
+                    print(sql)
+                data = (value, editid)
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(sql, data)
+                conn.commit()
+                cursor.close()
+                success = 1
+        return jsonify(success)
     except Exception as e:
         print(e)
     finally:
         cursor.close()
-    return render_template("/todo_list.html", Todolist=Todolist, form=form)
+        conn.close()
+    return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
 
-
-
-try:
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.close()
-    conn.close()
-finally:
-    True
 
 port = 5000  # + random.randint(0, 999)
 url = "http://127.0.0.1:{0}".format(port)
 
 threading.Timer(1.25, lambda: webbrowser.open(url)).start()
 app.run(port=port, debug=True)
-
-# engine = create_engine("database.db")
-# metadata = MetaData(bind=engine)

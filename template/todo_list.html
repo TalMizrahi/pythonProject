@@ -195,7 +195,7 @@ tr:nth-child(even) {
         </td>
        <td>
            <div class='edit' > {{ row[4] }} </div>
-        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' ], field="status">
+        <input type ='text' class='txtedit' ,  value='{{row[4]}}' , id='status@{{row[0]}}' , field="status">
        </td>
     </form>
     <form>
@@ -203,15 +203,9 @@ tr:nth-child(even) {
 
                   <div class="col-auto">
 
-<!--             <form method="POST" action="/done_todo/{{ row[0] }}">-->
-<!--             <input herf="/done_todo/{{row[0]}}" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">-->
-<!--             </form>-->
-<!--              <form class="edit_todolist" method="POST" action="/edit_todo">-->
-<!--             <input type="submit" class="btn btn-warning mb-2" name="btnEdit" value="Edit">-->
-                </form>
-             <form method="POST" action="/delete_todo/{{ row[0] }}">
-             <input align-text="center" herf="/delete_todo/{{row[0]}}" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">
-             </form>
+     <form method="POST" action="/delete_todo/{{ row[0] }}">
+     <input align-text="center" herf="/delete_todo/{{row[0]}}" type="submit" class="btn btn-danger mb-2"  value="Delete"  id="{{ row[0] }}">
+     </form>
 
           </div>
             </td>
@@ -238,7 +232,7 @@ tr:nth-child(even) {
           {{ wtf.form_field(form.priority,  placeholder="What is the Priority?") }}
           {{ wtf.form_field(form.status,  placeholder="What is the Status?") }}
       <button class="btn btn-success btn-sm pull-left" type="submit">Submit!</button>
-      <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+      <button class="btn btn-danger btn-sm pull-left" type="button" class="btn cancel" onclick="closeForm()">Close</button>
 
   </form>
 
