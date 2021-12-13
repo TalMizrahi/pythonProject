@@ -119,7 +119,6 @@ def logout():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
@@ -149,7 +148,6 @@ def about():
 
 
 @app.route('/todo_list', methods=['GET', 'POST'])
-@login_required
 def todolist():
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
@@ -237,9 +235,16 @@ def edit_todo():
         cursor.close()
     return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
 
-@app.route("/done_todo/<string:id><string:task_name><string:due_date><string:priority><string:status>", methods=['GET', 'POST'])
-def done_todo(id, task_name, due_date, priority, status):
-    print(id, task_name, due_date, priority, status)
+@app.route("/done_todo/<string:row_data>", methods=['GET', 'POST'])
+@login_required
+def done_todo(row_data):
+    print(row_data)
+    row_data = row_data.split("-@-")
+    id = row_data[0]
+    task_name = row_data[1]
+    due_date = row_data[2]
+    priority = row_data[3]
+    status = row_data[4]
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
         logged_user = current_user.username
