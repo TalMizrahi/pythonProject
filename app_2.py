@@ -168,7 +168,7 @@ def todolist():
                                [logged_user,'main'])
     done_list_table = sql_query('SELECT id, task_name, due_date, priority,status FROM `Todolist` WHERE username =? and board=?',
                                [logged_user,'done'])
-    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table,done_list_table=done_list_table, logged_user=logged_user)
+    return render_template("/todo_list.html", form=form, Todolist=Todolist, todolist_table=todolist_table,done_list_table=done_list_table, user_logged=user_logged,logged_user=logged_user)
 
 
 @app.route("/delete_todo/<string:id>", methods=['GET', 'POST'])

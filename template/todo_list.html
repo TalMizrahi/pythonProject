@@ -173,9 +173,9 @@ tr:nth-child(even) {
 <table>
 
     <tr>
-    <th style="text-align:center">Goal Achieved</th>
-    <th style="text-align:center">Date</th>
-    <th style="text-align:center">Priority Set</th>
+    <th style="text-align:center">To-Do</th>
+    <th style="text-align:center">Due Date</th>
+    <th style="text-align:center">Priority</th>
     <th style="text-align:center">Status</th>
     <th style="text-align:center">Actions</th>
   </tr>
@@ -214,6 +214,9 @@ tr:nth-child(even) {
  <input align-text="center" type="submit" class="btn btn-success mb-2"  value="Done!"  id="{{ row[0] }}">
  </form>
 
+<form method="POST" action="/top_todo/{{ row[0] }}@@@@{{ row[1] }}@@@@{{ row[2] }}@@@@{{ row[3] }}@@@@{{ row[4] }}">
+ <input align-text="center" type="submit" class="btn btn-info mb-2"  value="Top"  id="{{ row[0] }}">
+ </form>
             </td>
 
   </tr>
@@ -246,8 +249,8 @@ tr:nth-child(even) {
         <h2>My Done List!</h2>
 <table>
 <tr>
-    <th style="text-align:center">To-Do</th>
-    <th style="text-align:center">Due Date</th>
+    <th style="text-align:center">Goal Achieved</th>
+    <th style="text-align:center">Date</th>
     <th style="text-align:center">Priority</th>
     <th style="text-align:center">Status</th>
     <th style="text-align:center">Delete</th>
