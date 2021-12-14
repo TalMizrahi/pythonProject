@@ -123,22 +123,25 @@ def register():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
+        flash('Thanks for registering')
         db.session.commit()
         sql = """INSERT INTO Todolist (username, board, task_name, due_date, priority, status)
                     VALUES 
-                    (?, 'main',' Welcome! :) Click Done to add is to Done-List. :)', 'Date in any Format!', 'High/Mid/Low',' To-Do!'),
-                    (?, 'main', 'You can double click here to Edit and Save!','Anytime','High!','In-Progress'),
+                    (?, 'main',' Welcome! :) Click Done to add this to Done-List :)', 'Date in any Format!', 'High-Mid-Low',' To-Do!'),
+                    (?, 'main', 'You can double click here to Edit Anytime!','Anytime','High!','In-Progress'),
                     (?, 'main', 'Some important stuff like Pay Bills',' till friday','High','To-Do'),
                     (?, 'main','Plan my Next Vacation','Tomorrow at 20 pm', 'Mid','To-Do'),
                     (?, 'main','Swim','After Work, 21:00', 'Mid','To-Do'),
-                    (?, 'main','Buy Flowers to my Wife','14/02/2022', 'Highest','In-Progress')"""
+                    (?, 'main','Buy Flowers to my Wife','14-02-2022', 'Highest','In-Progress')"""
         print(sql)
         data = (form.username.data,form.username.data,form.username.data,form.username.data,form.username.data,form.username.data)
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(sql, data)
         conn.commit()
-    return render_template("login.html", form=form)
+        return redirect("login")
+
+    return render_template("register.html", form=form)
 
 
 @app.route('/about')
@@ -148,6 +151,7 @@ def about():
 
 
 @app.route('/todo_list', methods=['GET', 'POST'])
+@login_required
 def todolist():
     user_logged = is_user_logged_in()
     if current_user.is_authenticated:
@@ -236,10 +240,9 @@ def edit_todo():
     return render_template("/todo_list.html", Todolist=Todolist, form=form, user_logged=user_logged)
 
 @app.route("/done_todo/<string:row_data>", methods=['GET', 'POST'])
-@login_required
 def done_todo(row_data):
     print(row_data)
-    row_data = row_data.split("-@-")
+    row_data = row_data.split("@@@@")
     id = row_data[0]
     task_name = row_data[1]
     due_date = row_data[2]
